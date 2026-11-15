@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASUR STORE</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#111;font-family:Arial,sans-serif}
+header{background:#080808;color:white;padding:20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
+.logo{font-size:23px;font-weight:bold;letter-spacing:4px}
+button{cursor:pointer;border:0;padding:12px 18px;background:#111;color:white}
+.menu{padding:15px;background:#eee;display:flex;gap:12px;overflow:auto}
+.menu button{background:white;color:#111;border:1px solid #ddd}
+h2{text-align:center;letter-spacing:3px;margin:35px 0 10px}
+.sub{text-align:center;color:#777;margin-bottom:30px}
+.products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px}
+.product{border:1px solid #eee;padding:10px}
+.product img{width:100%;height:190px;object-fit:cover;background:#eee}
+.product h3{font-size:15px}
+.price{font-weight:bold}
+.product button{width:100%;margin-top:8px}
+#cart{padding:20px;background:#f5f5f5;margin:20px}
+#cartItems p{border-bottom:1px solid #ddd;padding:8px}
+input,select{width:100%;padding:13px;margin:7px 0;border:1px solid #ccc;background:white}
+#checkout{display:none;padding:20px}
+footer{text-align:center;background:#080808;color:white;padding:30px;margin-top:40px}
+@media(min-width:700px){.products{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ASUR STORE</div>
+  <button onclick="document.getElementById('cart').scrollIntoView()">САГС 🛒 <span id="count">0</span></button>
+</header>
+
+<nav class="menu">
+  <button onclick="show('Бүгд')">Бүх бараа</button>
+  <button onclick="show('Цамц')">Цамц</button>
+  <button onclick="show('Өмд')">Өмд</button>
+  <button onclick="show('Подволк')">Подволк</button>
+</nav>
+
+<h2>ASUR COLLECTION</h2>
+<p class="sub">Таны өдөр тутмын сонголт</p>
+
+<div class="products" id="products"></div>
+
+<section id="cart">
+  <h2>ТАНЫ САГС</h2>
+  <div id="cartItems">Сагс хоосон байна.</div>
+  <h3>Нийт: <span id="total">0</span> ₮</h3>
+  <button onclick="openCheckout()">ЗАХИАЛАХ</button>
+</section>
+
+<section id="checkout">
+  <h2>ЗАХИАЛГЫН МЭДЭЭЛЭЛ</h2>
+  <input id="customer" placeholder="Таны овог, нэр">
+  <input id="phone" type="tel" placeholder="Утасны дугаар">
+  <input id="address" placeholder="Хүргэлтийн гэрийн хаяг">
+  <button onclick="sendOrder()">ЗАХИАЛГА ҮРГЭЛЖЛҮҮЛЭХ</button>
+  <p id="message"></p>
+</section>
+
+<footer>
+  <h3>ASUR STORE</h3>
+  <p>Биднийг сонгосонд баярлалаа.</p>
+</footer>
+
+<script>
+const products=[
+ {name:"Энгийн цамц",cat:"Цамц",price:45000,img:"https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"},
+ {name:"Хар подволк",cat:"Подволк",price:35000,img:"https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=500"},
+ {name:"Загварлаг өмд",cat:"Өмд",price:65000,img:"https://images.unsplash.com/photo-1542272604-787c3835535d?w=500"},
+ {name:"Өдөр тутмын цамц",cat:"Цамц",price:50000,img:"https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=500"}
+];
+let cart=[];
+
+function render(items){
+ document.getElementById("products").innerHTML=items.map((p,i)=>`
+ <div class="product">
+ <img src="${p.img}" alt="${p.name}">
+ <h3>${p.name}</h3>
+ <p class="price">${p.price.toLocaleString()} ₮</p>
+ <select id="size${products.indexOf(p)}">
+ <option value="">Размер сонгох</option>
+ <option>S</option><option>M</option><option>L</option><option>XL</option>
+ </select>
+ <button onclick="add(${products.indexOf(p)})">САГСАНД НЭМЭХ</button>
+ </div>`).join("");
+}
+function show(cat){
+ render(cat==="Бүгд"?products:products.filter(p=>p.cat===cat));
+}
+function add(i){
+ let size=document.getElementById("size"+i).value;
+ if(!size){alert("Размер сонгоно уу");return}
+ cart.push({...products[i],size});
+ updateCart();
+}
+function updateCart(){
+ document.getElementById("count").textContent=cart.length;
+ document.getElementById("cartItems").innerHTML=cart.length?
+ cart.map((p,i)=>`<p>${p.name} / ${p.size} — ${p.price.toLocaleString()} ₮ <button onclick="removeItem(${i})">Хасах</button></p>`).join("")
+ :"Сагс хоосон байна.";
+ document.getElementById("total").textContent=cart.reduce((s,p)=>s+p.price,0).toLocaleString();
+}
+function removeItem(i){cart.splice(i,1);updateCart()}
+function openCheckout(){
+ if(!cart.length){alert("Эхлээд бараагаа сагсанд нэмнэ үү");return}
+ document.getElementById("checkout").style.display="block";
+ document.getElementById("checkout").scrollIntoView({behavior:"smooth"});
+}
+function sendOrder(){
+ let name=document.getElementById("customer").value.trim();
+ let phone=document.getElementById("phone").value.trim();
+ let address=document.getElementById("address").value.trim();
+ if(!name||!phone||!address){alert("Бүх мэдээллээ бөглөнө үү");return}
+ document.getElementById("message").textContent=
+ "Мэдээлэл бөглөгдлөө. Захиалгыг админд илгээх системийг дараагийн алхмаар холбоно.";
+}
+render(products);
+</script>
+</body>
+</html>
